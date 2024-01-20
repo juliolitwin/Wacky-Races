@@ -1,4 +1,4 @@
-﻿Shader "Custom/Color Swap (Mask)" {
+﻿Shader "Custom/Color Swap" {
     Properties {
         _MainTex("Base (RGB) Trans (A)", 2D) = "white" {}
         _Color("Tint", Color) = (1,1,1,1)
@@ -6,8 +6,10 @@
         _MaskTex("Mask", 2D) = "white" {}
         _ShadeShift("Shade Shift", Vector) = (0, 0, 0, 0)
         _HueShift("Hue Shift", Vector) = (0, 0, 0, 0)
+        _ColorChangeEffectToggle("Color Change Effect", Float) = 0
+        _ColorChangeSpeed("Color Change Speed", Float) = 1.0
     }
-
+    
     SubShader {
         Tags {
             "Queue" = "Transparent"
@@ -16,12 +18,12 @@
             "PreviewType" = "Plane"
             "CanUseSpriteAtlas" = "True"
         }
-
+        
         LOD 100
-
+        
         Lighting Off
         Blend SrcAlpha OneMinusSrcAlpha
-
+        
         Pass {
             CGPROGRAM
             #pragma vertex vert
@@ -43,16 +45,15 @@
                 float2 texcoord : TEXCOORD0;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
-
+            
             sampler2D _MainTex;
             float4 _MainTex_ST;
-            
             fixed4 _ShadeShift;
             fixed4 _HueShift;
-            
             fixed4 _Color;
-            
             sampler2D _MaskTex;
+            float _ColorChangeEffectToggle;
+            float _ColorChangeSpeed;
             
             v2f vert(appdata_t v) {
                 v2f o;
@@ -60,12 +61,9 @@
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.texcoord = TRANSFORM_TEX(v.texcoord, _MainTex);
-                #ifdef PIXELSNAP_ON
-                    o.vertex = UnityPixelSnap(o.vertex);
-                #endif
                 return o;
             }
-
+            
             fixed3 HueShift(fixed3 Color, float Shift) {
                 fixed k = 0.55735;
                 fixed3 kV = fixed3(k, k, k);
@@ -75,14 +73,21 @@
                 Color = U*cos(Shift*6.2832) + V*sin(Shift*6.2832) + P;
                 return Color;
             }
-
+            
             fixed4 frag(v2f i) : SV_Target {
                 fixed4 col = tex2D(_MainTex, i.texcoord) * _Color;
                 fixed3 mask = tex2D(_MaskTex, i.texcoord).rgb;
+            
                 fixed hueShift = dot(mask, _HueShift);
+                if (_ColorChangeEffectToggle > 0.5) {
+                    float time = _Time.y * _ColorChangeSpeed;
+                    hueShift += sin(time) * 0.5;
+                }
                 col.rgb = HueShift(col.rgb, hueShift);
+            
                 fixed shadeShift = dot(mask, _ShadeShift);
                 col.rgb *= (0.5 + shadeShift * 0.5 + 0.5);
+            
                 return col;
             }
             ENDCG
