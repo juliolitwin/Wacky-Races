@@ -1,4 +1,4 @@
-﻿Shader "Custom/Color Swap" {
+﻿Shader "Custom/Sprite Color Swap" {
     Properties {
         _MainTex("Base (RGB) Trans (A)", 2D) = "white" {}
         _Color("Tint", Color) = (1,1,1,1)
