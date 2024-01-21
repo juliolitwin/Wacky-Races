@@ -11,14 +11,14 @@ public class PoolService
 
     public PoolService()
     {
-        MonsterPool = new ObjectPool<GameObject>(
+        Monster = new ObjectPool<GameObject>(
             CreateMonsterPooled, OnMonsterTakeFromPool, OnMonsterReturnedToPool, OnMonsterDestroyPoolObject,
             CollectionCheck, DefaultCapacity, MaxSize);
 
         _monsterObject = Resources.Load<GameObject>(ResourcesConstants.Monster);
     }
 
-    public IObjectPool<GameObject> MonsterPool { get; }
+    public IObjectPool<GameObject> Monster { get; }
 
     private GameObject CreateMonsterPooled()
     {

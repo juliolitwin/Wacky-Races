@@ -1,6 +1,6 @@
 using VContainer.Unity;
 
-public class GamePresenter : IStartable
+public class GamePresenter : IStartable, ITickable
 {
     public GamePresenter(GameService gameService, GameView gameView)
     {
@@ -15,6 +15,11 @@ public class GamePresenter : IStartable
     {
         GameService.Initialization();
         EventBinding();
+    }
+
+    public void Tick()
+    {
+        GameService.Update();
     }
 
     private void EventBinding()

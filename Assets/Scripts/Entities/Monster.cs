@@ -1,18 +1,17 @@
 using UnityEngine;
 
+public delegate void OutEvent(Monster sender);
+
 public class Monster : Actor
 {
-    [SerializeField] private float _bodyHueValue = 0.0F;
-    [SerializeField] private float _eyeHueValue = 0.0F;
-    [SerializeField] private float _bodyShadeValue = 0.0F;
-
-    [SerializeField] private int _movementSpeed = 5;
-
     private Material _material;
-    private float _spriteWidth;
 
     private Transform _bodyTransform;
     private Transform _shadowTransform;
+
+    private bool _isOut = false;
+
+    public event OutEvent OutEvent;
 
     public override void Awake()
     {
@@ -20,15 +19,28 @@ public class Monster : Actor
         _shadowTransform = transform.Find("Shadow");
 
         _material = _bodyTransform.GetComponent<Renderer>().material;
-        _spriteWidth = _bodyTransform.GetComponent<SpriteRenderer>().bounds.size.x;
+        BodyRenderer = _bodyTransform.GetComponent<SpriteRenderer>();
+    }
 
-        var startPosition = CameraUtilities.GetStartPosition();
-        var startTransform = startPosition.x + ((_spriteWidth + 2) / 2);
-        this.transform.position = new Vector3(startTransform, 0f, 0f);
+    public SpriteRenderer BodyRenderer { get; private set; }
+
+    public float SpriteWidth => BodyRenderer?.bounds.size.x ?? 0;
+
+    public void Initialization(long id, float movementSpeed, float bodyHue, float eyeHue, float bodyShade, Vector3 startPosition, bool isRare)
+    {
+        Id = id;
+        MovementSpeed = movementSpeed;
+        SetColorSwap(bodyHue, eyeHue, bodyShade, isRare);
+
+        this.transform.position = startPosition;
+        _isOut = false;
     }
 
     public override void Update()
     {
+        if (_isOut)
+            return;
+
         var speed = MovementProcess();
         AnimationProcess(speed);
 
@@ -41,7 +53,7 @@ public class Monster : Actor
     private float MovementProcess()
     {
         var screenWidth = CameraUtilities.CalculateScreenWidthInWorldUnits();
-        var calculatedSpeed = screenWidth / _movementSpeed;
+        var calculatedSpeed = screenWidth / MovementSpeed;
 
         transform.Translate(calculatedSpeed * Time.deltaTime * Vector3.right);
         return calculatedSpeed;
@@ -57,25 +69,32 @@ public class Monster : Actor
         _shadowTransform.localScale = new Vector3(shadowScale, shadowScale, shadowScale);
     }
 
+    private void SetColorSwap(float bodyHue, float eyeHue, float bodyShade, bool isRare)
+    {
+        if (isRare)
+        {
+            _material.SetFloat("_ColorChangeEffectToggle", 1f);
+            _material.SetFloat("_ColorChangeSpeed", Random.Range(3f, 10f));
+        }
+        else
+        {
+            _material.SetFloat("_ColorChangeEffectToggle", 0f);
+            _material.SetFloat("_ColorChangeSpeed", 0f);
+        }
+
+        _material.SetVector("_HueShift", new Vector2(bodyHue, eyeHue));
+        _material.SetVector("_ShadeShift", new Vector2(bodyShade, 0));
+    }
+
     private bool IsOut()
     {
-        var calculatedOut = transform.position.x - _spriteWidth / 2;
+        var calculatedOut = transform.position.x - SpriteWidth / 2;
         return calculatedOut > CameraUtilities.GetEndPosition().x;
     }
 
     private void Out()
     {
-        Destroy(gameObject);
-    }
-
-    public override void LateUpdate()
-    {
-        SetColorSwap(_bodyHueValue, _eyeHueValue, _bodyShadeValue);
-    }
-
-    private void SetColorSwap(float bodyHue, float eyeHue, float bodyShade)
-    {
-        _material.SetVector("_HueShift", new Vector2(bodyHue, eyeHue));
-        _material.SetVector("_ShadeShift", new Vector2(bodyShade, 0));
+        OutEvent?.Invoke(this);
+        _isOut = true;
     }
 }

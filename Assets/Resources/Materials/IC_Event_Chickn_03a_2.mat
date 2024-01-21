@@ -67,8 +67,8 @@ Material:
     m_Floats:
     - PixelSnap: 0
     - _BumpScale: 1
-    - _ColorChangeEffectToggle: 1
-    - _ColorChangeSpeed: 6
+    - _ColorChangeEffectToggle: 0
+    - _ColorChangeSpeed: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
