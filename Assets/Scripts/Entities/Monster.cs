@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CustomColorSwap : MonoBehaviour
+public class Monster : Actor
 {
     [SerializeField] private float _bodyHueValue = 0.0F;
     [SerializeField] private float _eyeHueValue = 0.0F;
@@ -14,7 +14,7 @@ public class CustomColorSwap : MonoBehaviour
     private Transform _bodyTransform;
     private Transform _shadowTransform;
 
-    void Awake()
+    public override void Awake()
     {
         _bodyTransform = transform.Find("Body");
         _shadowTransform = transform.Find("Shadow");
@@ -27,7 +27,7 @@ public class CustomColorSwap : MonoBehaviour
         this.transform.position = new Vector3(startTransform, 0f, 0f);
     }
 
-    private void Update()
+    public override void Update()
     {
         var speed = MovementProcess();
         AnimationProcess(speed);
@@ -68,7 +68,7 @@ public class CustomColorSwap : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private void LateUpdate()
+    public override void LateUpdate()
     {
         SetColorSwap(_bodyHueValue, _eyeHueValue, _bodyShadeValue);
     }
