@@ -2,9 +2,14 @@ using UnityEngine;
 
 public static class CameraUtilities
 {
+    public static float CalculateScreenHeightInWorldUnits()
+    {
+        return 2f * Camera.main.orthographicSize;
+    }
+
     public static float CalculateScreenWidthInWorldUnits()
     {
-        float height = 2f * Camera.main.orthographicSize;
+        float height = CalculateScreenHeightInWorldUnits();
         return height * Camera.main.aspect;
     }
 
