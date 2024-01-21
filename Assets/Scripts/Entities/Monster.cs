@@ -25,12 +25,13 @@ public class Monster : Actor
 
     public float SpriteWidth => BodyRenderer?.bounds.size.x ?? 0;
 
-    public void Initialization(long id, float movementSpeed, float bodyHue, float eyeHue, float bodyShade, Vector3 startPosition, bool isRare)
+    public void Initialization(long id, float movementSpeed, int layer, float bodyHue, float eyeHue, float bodyShade, Vector3 startPosition, bool isRare)
     {
         Id = id;
         MovementSpeed = movementSpeed;
         SetColorSwap(bodyHue, eyeHue, bodyShade, isRare);
 
+        BodyRenderer.sortingOrder = layer;
         transform.position = startPosition;
         _isOut = false;
     }

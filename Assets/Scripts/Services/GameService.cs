@@ -49,16 +49,23 @@ public class GameService
 
         var id = GenerateId();
 
-        var movementSpeed = 100f;
-        //var movementSpeed = Random.Range(2f, 10f);
+        //var movementSpeed = 100f;
+        var movementSpeed = Random.Range(2f, 10f);
         var bodyHue = Random.Range(0f, 1f);
         var eyeHue = Random.Range(0f, 1f);
         var bodyShade = Random.Range(0f, 1f);
         var isRare = Random.Range(0, 100) >= 90;
 
         var startTransform = CameraUtilities.GetStartPosition().x + ((monster.SpriteWidth + 2) / 2);
-        var spawnPosition = new Vector3(startTransform, lines[Random.Range(0, lines.Length)], 0);
-        monster.Initialization(id, movementSpeed, bodyHue, eyeHue, bodyShade, spawnPosition, isRare);
+
+        var rndLine = Random.Range(0, lines.Length);
+        var currentLine = lines[rndLine];
+
+        var spawnPosition = new Vector3(startTransform, currentLine, 0);
+
+        var sortLayer = (lines.Length - 1) - rndLine;
+
+        monster.Initialization(id, movementSpeed, sortLayer, bodyHue, eyeHue, bodyShade, spawnPosition, isRare);
         monster.OutEvent += OnMonsterOut;
 
         _monsters.Add(id, monster);
@@ -148,7 +155,6 @@ public class GameService
 
     private float GetBackgroundHeight()
     {
-        UnityEngine.Debug.Log($"{_backgroundRenderer.bounds.size.y}");
         return _backgroundRenderer.bounds.size.y;
     }
 
