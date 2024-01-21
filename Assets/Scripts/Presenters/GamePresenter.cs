@@ -2,18 +2,18 @@ using VContainer.Unity;
 
 public class GamePresenter : IStartable
 {
-    private readonly GameService _gameService;
-    private readonly GameView _gameView;
-
     public GamePresenter(GameService gameService, GameView gameView)
     {
-        _gameService = gameService;
-        _gameView = gameView;
+        GameService = gameService;
+        GameView = gameView;
     }
+
+    private GameService GameService { get; }
+    private GameView GameView { get; }
 
     void IStartable.Start()
     {
-        _gameService.Initialization();
+        GameService.Initialization();
         EventBinding();
     }
 

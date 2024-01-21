@@ -1,23 +1,30 @@
 using UnityEngine;
+using UnityEngine.Pool;
 
 public class GameService
 {
-    private readonly GameView _gameView;
     private Transform _canvas;
 
-    public GameService(GameView gameView)
+    public GameService(PoolService poolService, GameView gameView)
     {
-        _gameView = gameView;
+        ObjectPool = poolService;
+        GameView = gameView;
     }
+
+    public PoolService ObjectPool { get; }
+
+    public GameView GameView { get; }
 
     public void Initialization()
     {
         LoadComponents();
+
+        ObjectPool.MonsterPool.Get();
     }
 
     private void LoadComponents()
     {
         _canvas = GameObject.Find("Canvas").transform;
-        _gameView.transform.SetParent(_canvas.transform);
+        GameView.transform.SetParent(_canvas.transform);
     }
 }

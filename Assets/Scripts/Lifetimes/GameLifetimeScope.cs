@@ -10,6 +10,7 @@ public class GameLifetimeScope : LifetimeScope
 
         builder.RegisterEntryPoint<GamePresenter>(Lifetime.Scoped);
         builder.Register<GameService>(Lifetime.Scoped);
+        builder.Register<PoolService>(Lifetime.Singleton);
     }
 
     private void LoadViews(IContainerBuilder builder)
