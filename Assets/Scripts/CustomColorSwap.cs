@@ -2,20 +2,16 @@ using UnityEngine;
 
 public class CustomColorSwap : MonoBehaviour
 {
-    [SerializeField]
-    private float _bodyHueValue = 0.0F;
+    [SerializeField] private float _bodyHueValue = 0.0F;
+    [SerializeField] private float _eyeHueValue = 0.0F;
+    [SerializeField] private float _bodyShadeValue = 0.0F;
 
-    [SerializeField]
-    private float _eyeHueValue = 0.0F;
+    [SerializeField] private float _movementSpeed = 5f;
 
-    [SerializeField]
-    private float _bodyShadeValue = 0.0F;
+    [SerializeField] private float _animationAngle = 4.0f;
+    [SerializeField] private float _animationSpeed = 3.0f;
 
     private Material _material;
-
-    [SerializeField]
-    private float moveSpeed = 5f;
-    private Vector3 moveDirection = Vector3.right;
 
     void Start()
     {
@@ -24,8 +20,15 @@ public class CustomColorSwap : MonoBehaviour
 
     private void Update()
     {
-        transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
-        if (transform.position.x < GetEndPosition().x)
+        float screenWidth = CalculateScreenWidthInWorldUnits();
+        var ms = screenWidth / _movementSpeed;
+
+        Debug.Log($"Current speed: {ms}");
+        transform.Translate(ms * Time.deltaTime * Vector3.right);
+
+        transform.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(Time.time * ms * _animationSpeed) * _animationAngle);
+
+        if (transform.position.x > GetEndPosition().x)
         {
             Destroy(gameObject);
         }
@@ -43,15 +46,15 @@ public class CustomColorSwap : MonoBehaviour
         return height * Camera.main.aspect;
     }
 
-    private Vector3 GetStartPosition()
+    public Vector3 GetStartPosition()
     {
         float screenWidth = CalculateScreenWidthInWorldUnits();
-        return new Vector3(Camera.main.transform.position.x + screenWidth / 2, 0, 0);
+        return new Vector3(Camera.main.transform.position.x - screenWidth / 2, 0, 0);
     }
 
     private Vector3 GetEndPosition()
     {
         float screenWidth = CalculateScreenWidthInWorldUnits();
-        return new Vector3(Camera.main.transform.position.x - screenWidth / 2, 0, 0);
+        return new Vector3(Camera.main.transform.position.x + screenWidth / 2, 0, 0);
     }
 }

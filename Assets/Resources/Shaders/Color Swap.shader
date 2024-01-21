@@ -8,6 +8,7 @@
         _HueShift("Hue Shift", Vector) = (0, 0, 0, 0)
         _ColorChangeEffectToggle("Color Change Effect", Float) = 0
         _ColorChangeSpeed("Color Change Speed", Float) = 1.0
+        _Flip("Flip", Vector) = (1,1,1,1)
     }
     
     SubShader {
@@ -21,16 +22,19 @@
         
         LOD 100
         
+        Cull Off
         Lighting Off
-        Blend SrcAlpha OneMinusSrcAlpha
+        ZWrite Off
+        Blend One OneMinusSrcAlpha
         
         Pass {
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 2.0
-            #pragma multi_compile _ PIXELSNAP_ON
             #pragma multi_compile_instancing
+            #pragma multi_compile_local _ PIXELSNAP_ON
+            #pragma multi_compile _ ETC1_EXTERNAL_ALPHA
             
             #include "UnityCG.cginc"
             
@@ -54,13 +58,23 @@
             sampler2D _MaskTex;
             float _ColorChangeEffectToggle;
             float _ColorChangeSpeed;
+
+            fixed2 _Flip;
             
+            inline float4 UnityFlipSprite(in float3 pos, in fixed2 flip)
+            {
+                return float4(pos.xy * flip, pos.z, 1.0);
+            }
+
             v2f vert(appdata_t v) {
                 v2f o;
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                o.texcoord = TRANSFORM_TEX(v.texcoord, _MainTex);
+
+                o.vertex = UnityFlipSprite(v.vertex, _Flip);
+                o.vertex = UnityObjectToClipPos(o.vertex);
+                o.texcoord = v.texcoord;
+
                 return o;
             }
             
@@ -77,14 +91,14 @@
             fixed4 frag(v2f i) : SV_Target {
                 fixed4 col = tex2D(_MainTex, i.texcoord) * _Color;
                 fixed3 mask = tex2D(_MaskTex, i.texcoord).rgb;
-            
+                
                 fixed hueShift = dot(mask, _HueShift);
                 if (_ColorChangeEffectToggle > 0.5) {
                     float time = _Time.y * _ColorChangeSpeed;
                     hueShift += sin(time) * 0.5;
                 }
                 col.rgb = HueShift(col.rgb, hueShift);
-            
+                
                 fixed shadeShift = dot(mask, _ShadeShift);
                 col.rgb *= (0.5 + shadeShift * 0.5 + 0.5);
             
