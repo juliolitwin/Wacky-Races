@@ -1,28 +1,27 @@
 using UnityEngine;
 
-public delegate void OutEvent(Monster sender);
+public delegate void MonsterOutEvent(Monster sender);
 
 public class Monster : Actor
 {
-    private Material _material;
-
     private Transform _bodyTransform;
     private Transform _shadowTransform;
 
     private bool _isOut = false;
 
-    public event OutEvent OutEvent;
+    public event MonsterOutEvent OutEvent;
 
     public override void Awake()
     {
         _bodyTransform = transform.Find("Body");
         _shadowTransform = transform.Find("Shadow");
 
-        _material = _bodyTransform.GetComponent<Renderer>().material;
         BodyRenderer = _bodyTransform.GetComponent<SpriteRenderer>();
+        Material = BodyRenderer.material;
     }
 
     public SpriteRenderer BodyRenderer { get; private set; }
+    public Material Material { get; private set; }
 
     public float SpriteWidth => BodyRenderer?.bounds.size.x ?? 0;
 
@@ -32,7 +31,7 @@ public class Monster : Actor
         MovementSpeed = movementSpeed;
         SetColorSwap(bodyHue, eyeHue, bodyShade, isRare);
 
-        this.transform.position = startPosition;
+        transform.position = startPosition;
         _isOut = false;
     }
 
@@ -41,8 +40,11 @@ public class Monster : Actor
         if (_isOut)
             return;
 
-        var speed = MovementProcess();
-        AnimationProcess(speed);
+        var screenWidth = CameraUtilities.CalculateScreenWidthInWorldUnits();
+        var calculatedSpeed = screenWidth / MovementSpeed;
+
+        MovementProcess(calculatedSpeed);
+        AnimationProcess(calculatedSpeed);
 
         if (IsOut())
         {
@@ -50,13 +52,9 @@ public class Monster : Actor
         }
     }
 
-    private float MovementProcess()
+    private void MovementProcess(float speed)
     {
-        var screenWidth = CameraUtilities.CalculateScreenWidthInWorldUnits();
-        var calculatedSpeed = screenWidth / MovementSpeed;
-
-        transform.Translate(calculatedSpeed * Time.deltaTime * Vector3.right);
-        return calculatedSpeed;
+        Move(speed);
     }
 
     private void AnimationProcess(float ms)
@@ -73,17 +71,17 @@ public class Monster : Actor
     {
         if (isRare)
         {
-            _material.SetFloat("_ColorChangeEffectToggle", 1f);
-            _material.SetFloat("_ColorChangeSpeed", Random.Range(3f, 10f));
+            Material.SetFloat("_ColorChangeEffectToggle", 1f);
+            Material.SetFloat("_ColorChangeSpeed", Random.Range(3f, 10f));
         }
         else
         {
-            _material.SetFloat("_ColorChangeEffectToggle", 0f);
-            _material.SetFloat("_ColorChangeSpeed", 0f);
+            Material.SetFloat("_ColorChangeEffectToggle", 0f);
+            Material.SetFloat("_ColorChangeSpeed", 0f);
         }
 
-        _material.SetVector("_HueShift", new Vector2(bodyHue, eyeHue));
-        _material.SetVector("_ShadeShift", new Vector2(bodyShade, 0));
+        Material.SetVector("_HueShift", new Vector2(bodyHue, eyeHue));
+        Material.SetVector("_ShadeShift", new Vector2(bodyShade, 0));
     }
 
     private bool IsOut()

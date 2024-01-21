@@ -59,6 +59,12 @@ public class GameService
         _monsters.Add(id, monster);
     }
 
+    public bool IsOut(Monster monster)
+    {
+        var calculatedOut = monster.transform.position.x - monster.SpriteWidth / 2;
+        return calculatedOut > CameraUtilities.GetEndPosition().x;
+    }
+
     private void MonsterRemoveProcess()
     {
         if (_monstersToRemove.Count == 0)

@@ -9,4 +9,9 @@ public class Actor : MonoBehaviour
     public virtual void Start() { }
     public virtual void Update() { }
     public virtual void LateUpdate() { }
+
+    public virtual void Move(float speed)
+    {
+        transform.Translate(speed * Time.deltaTime * Vector3.right);
+    }
 }
