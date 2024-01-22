@@ -4,6 +4,7 @@ public class Entity : MonoBehaviour
 {
     public long Id { get; protected set; } = 0;
     public float MovementSpeed { get; protected set; }
+    public EntityState EntityState { get; private set; }
 
     public virtual void Awake() { }
     public virtual void Start() { }
@@ -18,5 +19,10 @@ public class Entity : MonoBehaviour
     public virtual float CalculateSpeedVariation()
     {
         return Random.Range(MovementSpeed / 1.5f, MovementSpeed * 1.5f);
+    }
+
+    public virtual void ChangeState(EntityState state)
+    {
+        EntityState = state;
     }
 }

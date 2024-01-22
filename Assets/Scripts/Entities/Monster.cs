@@ -28,11 +28,6 @@ public class Monster : Entity
     }
 
     /// <summary>
-    /// Property to check if the monster is out of the screen.
-    /// </summary>
-    public bool IsOutFromScreen { get; private set; }
-
-    /// <summary>
     /// Public property to access the body's sprite renderer.
     /// </summary>
     public SpriteRenderer BodyRenderer { get; private set; }
@@ -68,27 +63,42 @@ public class Monster : Entity
         // Setting the sorting order for rendering and initial position.
         BodyRenderer.sortingOrder = layer;
         transform.position = startPosition;
-        IsOutFromScreen = false;
+        ChangeState(EntityState.Idle);
     }
 
     public override void Update()
     {
-        // Skip update if the monster is already out of the screen.
-        if (IsOutFromScreen)
-            return;
+        // Process the state from the monster.
+        StateProcess();
+    }
 
-        // Calculate screen width and movement speed.
-        var screenWidth = CameraUtilities.CalculateScreenWidthInWorldUnits();
-        var calculatedSpeed = screenWidth / MovementSpeed;
-
-        // Process movement and animation based on calculated speed.
-        MovementProcess(calculatedSpeed);
-        AnimationProcess(calculatedSpeed);
-
-        // Check if the monster is out of the screen and trigger the Out event.
-        if (IsOutScreen())
+    private void StateProcess()
+    {
+        switch (EntityState)
         {
-            Out();
+            case EntityState.Idle:
+            case EntityState.Out:
+                {
+                    // Nothing to do, because monster is waiting next state.
+                }
+                break;
+            case EntityState.Run:
+                {
+                    // Calculate screen width and movement speed.
+                    var screenWidth = CameraUtilities.CalculateScreenWidthInWorldUnits();
+                    var calculatedSpeed = screenWidth / MovementSpeed;
+
+                    // Process movement and animation based on calculated speed.
+                    MovementProcess(calculatedSpeed);
+                    AnimationProcess(calculatedSpeed);
+
+                    // Check if the monster is out of the screen and trigger the Out event.
+                    if (IsOutScreen())
+                    {
+                        Out();
+                    }
+                }
+                break;
         }
     }
 
@@ -155,8 +165,9 @@ public class Monster : Entity
     /// </summary>
     private void Out()
     {
+        ChangeState(EntityState.Out);
+
         // Invoke the Out event and update the status.
         OutEvent?.Invoke(this);
-        IsOutFromScreen = true;
     }
 }

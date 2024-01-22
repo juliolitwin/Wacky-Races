@@ -53,6 +53,15 @@ public class EntityService
         CreateMonsters(monstersToSpawn);
     }
 
+    public void Fire()
+    {
+        foreach (var pair in _monsters)
+        {
+            var monster = pair.Value;
+            monster.ChangeState(EntityState.Run);
+        }
+    }
+
     public void CreateMonsters(int monstersToSpawn)
     {
         if (monstersToSpawn <= 0)
@@ -142,7 +151,7 @@ public class EntityService
         _temporaryMonstersToRemove.Clear();
 
         var monsters = _monstersToRemove.ToList();
-        
+
         for (int i = 0; i < monsters.Count; i++)
         {
             var pair = monsters[i];
