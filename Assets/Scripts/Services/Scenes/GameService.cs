@@ -61,7 +61,7 @@ public class GameService
 
         _backgroundRenderer = _environments.transform.Find("Road").GetComponent<SpriteRenderer>();
 
-        // Notes: calculated the tolerante with current logic
+        // @Notes - calculated the tolerante with current logic:
         // BodyRenderer.bounds.size.y / 4 = 0.66825f
         SpawnHeights = GetYPositionsForLines(3, GetBackgroundHeight(), GetBackgroundPosition(), 0.66825f);
     }

@@ -1,18 +1,18 @@
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class EntityService
 {
-    private Transform _entities;
+    private Transform _entitiesTransform;
 
     private IDictionary<long, Monster> _monsters = new Dictionary<long, Monster>();
-    private IDictionary<Monster, float> _monstersToRemove = new ConcurrentDictionary<Monster, float>();
-
-    private long _lastMonsterId = 0;
-    private int _currentCount = 0;
+    private IDictionary<long, float> _monstersToRemove = new Dictionary<long, float>();
+    private IList<long> _temporaryMonstersToRemove = new List<long>();
 
     public float[] _spawnHeights;
+
+    private RoundFinishDelegate OnRoundFinish;
 
     public EntityService(PoolService poolService)
     {
@@ -21,15 +21,35 @@ public class EntityService
 
     public PoolService ObjectPool { get; }
 
-    public void Initialization(float[] spawnHeights)
+    public long LastMonsterId { get; private set; }
+    public int CurrentCount { get; private set; }
+
+    public void Initialization(float[] spawnHeights, RoundFinishDelegate onFinish)
     {
         LoadComponents();
         _spawnHeights = spawnHeights;
+        OnRoundFinish = onFinish;
+    }
+
+    public void Clear()
+    {
+        LastMonsterId = 0;
+        CurrentCount = 0;
+
+        _monstersToRemove.Clear();
+
+        foreach (var pair in _monsters)
+        {
+            var monster = pair.Value;
+            RemoveMonster(monster);
+        }
+
+        _monsters.Clear();
     }
 
     public void Spawn(int monstersToSpawn)
     {
-        _currentCount = monstersToSpawn;
+        CurrentCount = monstersToSpawn;
         CreateMonsters(monstersToSpawn);
     }
 
@@ -53,13 +73,13 @@ public class EntityService
     {
         var monsterObject = ObjectPool.Monster.Get();
         var monster = monsterObject.GetComponent<Monster>();
-        monster.transform.SetParent(_entities, false);
+        monster.transform.SetParent(_entitiesTransform, false);
         monster.transform.localScale = MonsterConstants.DefaultScale;
 
         var id = GenerateEntityId();
 
         //var movementSpeed = 500f;
-        var movementSpeed = Random.Range(2f, 10f);
+        var movementSpeed = Random.Range(1f, 15f);
         var bodyHue = Random.Range(0f, 1f);
         var eyeHue = Random.Range(0f, 1f);
         var bodyShade = Random.Range(0f, 1f);
@@ -82,7 +102,17 @@ public class EntityService
 
     private long GenerateEntityId()
     {
-        return _lastMonsterId++;
+        return LastMonsterId++;
+    }
+
+    private Monster GetMonster(long monsterId)
+    {
+        if (_monsters.TryGetValue(monsterId, out var monster))
+        {
+            return monster;
+        }
+
+        return null;
     }
 
     private void RemoveMonster(Monster monster)
@@ -93,18 +123,15 @@ public class EntityService
 
     private void OnMonsterOut(Monster monster)
     {
-        _monstersToRemove.Add(monster, 1f);
+        if (!_monstersToRemove.ContainsKey(monster.Id))
+            _monstersToRemove.Add(monster.Id, 1f);
 
-        _currentCount--;
-        if (_currentCount <= 0)
-        {
-            //EndRound();
-        }
+        CurrentCount--;
     }
 
     private void LoadComponents()
     {
-        _entities = GameObject.Find("Entities").transform;
+        _entitiesTransform = GameObject.Find("Entities").transform;
     }
 
     private void MonsterRemoveProcess()
@@ -112,21 +139,32 @@ public class EntityService
         if (_monstersToRemove.Count == 0)
             return;
 
-        var monstersToRemove = new List<Monster>();
+        _temporaryMonstersToRemove.Clear();
 
-        foreach (var pair in _monstersToRemove)
+        var monsters = _monstersToRemove.ToList();
+        
+        for (int i = 0; i < monsters.Count; i++)
         {
+            var pair = monsters[i];
             _monstersToRemove[pair.Key] -= Time.deltaTime;
             if (_monstersToRemove[pair.Key] <= 0)
             {
-                monstersToRemove.Add(pair.Key);
+                _temporaryMonstersToRemove.Add(pair.Key);
             }
         }
 
-        foreach (var monster in monstersToRemove)
+        for (var i = 0; i < _temporaryMonstersToRemove.Count; i++)
         {
+            var monsterId = _temporaryMonstersToRemove[i];
+            var monster = GetMonster(monsterId);
+            if (monster == null)
+                continue;
+
             RemoveMonster(monster);
-            _monstersToRemove.Remove(monster);
+            _monstersToRemove.Remove(monsterId);
         }
+
+        if (_monsters.Count == 0)
+            OnRoundFinish();
     }
 }

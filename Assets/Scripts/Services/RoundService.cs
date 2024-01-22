@@ -10,11 +10,11 @@ public class RoundService
 
     public EntityService EntityService { get; }
 
-    public int Round { get; private set; } = 1;
+    public int Round { get; private set; } = 4;
 
     public void Initialization(float[] spawnHeights)
     {
-        EntityService?.Initialization(spawnHeights);
+        EntityService?.Initialization(spawnHeights, EndRound);
     }
 
     public void Update()
@@ -29,7 +29,10 @@ public class RoundService
 
     private void EndRound()
     {
-        Debug.Log("Round finished.");
+        Debug.Log($"Round ({Round}) is finished.");
+
+        Round++;
+        StartRound();
     }
 
 #if FIBONACCI_RECURSIVE
