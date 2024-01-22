@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Actor : MonoBehaviour
+public class Entity : MonoBehaviour
 {
     public long Id { get; protected set; } = 0;
     public float MovementSpeed { get; protected set; }
@@ -13,5 +13,10 @@ public class Actor : MonoBehaviour
     public virtual void Move(float speed)
     {
         transform.Translate(speed * Time.deltaTime * Vector3.right);
+    }
+
+    public virtual float CalculateSpeedVariation()
+    {
+        return Random.Range(MovementSpeed / 1.5f, MovementSpeed * 1.5f);
     }
 }

@@ -5,6 +5,6 @@ public class ResourcesConstants
     // UI's
     public static string GameView = $"{Prefabs}/UI/GameView";
     
-    // Actor's
+    // Entities
     public static string Monster = $"{Prefabs}/Entity/Monster";
 }

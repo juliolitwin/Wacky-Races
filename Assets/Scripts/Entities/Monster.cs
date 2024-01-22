@@ -1,13 +1,9 @@
 using UnityEngine;
 
-public delegate void MonsterOutEvent(Monster sender);
-
-public class Monster : Actor
+public class Monster : Entity
 {
     private Transform _bodyTransform;
     private Transform _shadowTransform;
-
-    private bool _isOut = false;
 
     public event MonsterOutEvent OutEvent;
 
@@ -17,11 +13,12 @@ public class Monster : Actor
         _shadowTransform = transform.Find("Shadow");
 
         BodyRenderer = _bodyTransform.GetComponent<SpriteRenderer>();
-        Material = BodyRenderer.material;
     }
 
+    public bool IsOutFromScreen { get; private set; }
+
     public SpriteRenderer BodyRenderer { get; private set; }
-    public Material Material { get; private set; }
+    public Material Material => BodyRenderer.material;
 
     public float SpriteWidth => BodyRenderer?.bounds.size.x ?? 0;
 
@@ -33,12 +30,12 @@ public class Monster : Actor
 
         BodyRenderer.sortingOrder = layer;
         transform.position = startPosition;
-        _isOut = false;
+        IsOutFromScreen = false;
     }
 
     public override void Update()
     {
-        if (_isOut)
+        if (IsOutFromScreen)
             return;
 
         var screenWidth = CameraUtilities.CalculateScreenWidthInWorldUnits();
@@ -47,7 +44,7 @@ public class Monster : Actor
         MovementProcess(calculatedSpeed);
         AnimationProcess(calculatedSpeed);
 
-        if (IsOut())
+        if (IsOutScreen())
         {
             Out();
         }
@@ -85,7 +82,7 @@ public class Monster : Actor
         Material.SetVector("_ShadeShift", new Vector2(bodyShade, 0));
     }
 
-    private bool IsOut()
+    private bool IsOutScreen()
     {
         var calculatedOut = transform.position.x - SpriteWidth / 2;
         return calculatedOut > CameraUtilities.GetEndPosition().x;
@@ -94,6 +91,6 @@ public class Monster : Actor
     private void Out()
     {
         OutEvent?.Invoke(this);
-        _isOut = true;
+        IsOutFromScreen = true;
     }
 }
