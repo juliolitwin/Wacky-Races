@@ -17,16 +17,21 @@ public class RoundService
     /// <summary>
     /// Constructor to inject the entity service dependency.
     /// </summary>
-    /// <param name="entityService"></param>
-    public RoundService(EntityService entityService)
+    public RoundService(EntityService entityService, GameView gameView)
     {
         EntityService = entityService;
+        GameView = gameView;
     }
 
     /// <summary>
     /// Publicly accessible EntityService instance.
     /// </summary>
     public EntityService EntityService { get; }
+
+    /// <summary>
+    /// Publicly accessible GameView instance.
+    /// </summary>
+    public GameView GameView { get; }
 
     /// <summary>
     /// Property to keep track of the current round.
@@ -72,6 +77,7 @@ public class RoundService
         {
             if (secondsRemaining > 0)
             {
+                GameView.SetCountdown($"{secondsRemaining}");
                 Debug.Log($"{secondsRemaining} to start the race.");
             }
             _lastCountdown = secondsRemaining;
@@ -82,7 +88,9 @@ public class RoundService
         {
             _spawnDelayTimer = 0f;
             _isSpawnReady = true;
+            
             Fire();
+
             Debug.Log("Race is started!");
         }
     }
@@ -92,6 +100,7 @@ public class RoundService
     /// </summary>
     public void StartRound()
     {
+        GameView.SetRound(Round);
         Debug.Log($"Round ({Round}) is started.");
 
         // Spawn entities based on the Fibonacci sequence of the current round.
@@ -105,6 +114,7 @@ public class RoundService
     /// </summary>
     private void Fire()
     {
+        GameView.SetStartCountdown();
         EntityService?.Fire();
     }
 
@@ -115,6 +125,12 @@ public class RoundService
     {
         Debug.Log($"Round ({Round}) is finished.");
 
+        // Start a new round.
+        NextRound();
+    }
+
+    public void NextRound()
+    {
         // Increment round number and start a new round.
         Round++;
         StartRound();

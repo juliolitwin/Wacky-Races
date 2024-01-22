@@ -13,14 +13,18 @@ public class GamePresenter : IStartable, ITickable
     /// </summary>
     /// <param name="gameService">Instance of GameService containing the game logic.</param>
     /// <param name="gameView">Instance of GameView representing the user interface.</param>
-    public GamePresenter(GameService gameService, GameView gameView)
+    public GamePresenter(GameService gameService, RoundService roundService, GameView gameView)
     {
         GameService = gameService;
+        RoundService = roundService;
         GameView = gameView;
     }
 
     // Reference to the GameService that contains the game logic.
     private GameService GameService { get; }
+
+    // Reference to the RoundService that contains the game logic.
+    private RoundService RoundService { get; }
 
     // Reference to the GameView that represents the user interface.
     private GameView GameView { get; }
@@ -49,6 +53,12 @@ public class GamePresenter : IStartable, ITickable
     /// </summary>
     private void EventBinding()
     {
-        // Bind events or actions between GameService and GameView.
+        GameView.Play.onClick.AddListener(OnInitialButtonClicked);
+    }
+
+    private void OnInitialButtonClicked()
+    {
+        GameView.HideInitial();
+        RoundService?.StartRound();
     }
 }
