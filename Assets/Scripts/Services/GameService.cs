@@ -27,7 +27,10 @@ public class GameService
     {
         LoadComponents();
 
-        var lines = GetYPositionsForLines(3, GetBackgroundHeight(), GetBackgroundPosition());
+        // Notes:
+        // Calculated the tolerante with current logic
+        // BodyRenderer.bounds.size.y / 4 = 0.66825f
+        var lines = GetYPositionsForLines(3, GetBackgroundHeight(), GetBackgroundPosition(), 0.66825f);
 
         for (var i = 0; i < 20; i++)
         {
@@ -49,14 +52,14 @@ public class GameService
 
         var id = GenerateId();
 
-        //var movementSpeed = 100f;
+        //var movementSpeed = 500f;
         var movementSpeed = Random.Range(2f, 10f);
         var bodyHue = Random.Range(0f, 1f);
         var eyeHue = Random.Range(0f, 1f);
         var bodyShade = Random.Range(0f, 1f);
         var isRare = Random.Range(0, 100) >= 90;
 
-        var startTransform = CameraUtilities.GetStartPosition().x + ((monster.SpriteWidth + 2) / 2);
+        var startTransform = CameraUtilities.GetStartPosition().x + (monster.SpriteWidth / 2);
 
         var rndLine = Random.Range(0, lines.Length);
         var currentLine = lines[rndLine];
@@ -68,6 +71,9 @@ public class GameService
         monster.Initialization(id, movementSpeed, sortLayer, bodyHue, eyeHue, bodyShade, spawnPosition, isRare);
         monster.OutEvent += OnMonsterOut;
 
+
+        var aa = monster.BodyRenderer.bounds.size.y / 4;
+
         _monsters.Add(id, monster);
     }
 
@@ -77,28 +83,22 @@ public class GameService
         return calculatedOut > CameraUtilities.GetEndPosition().x;
     }
 
-    private float[] GetYPositionsForLines(int numberOfLines)
-    {
-        var screenHeight = CameraUtilities.CalculateScreenHeightInWorldUnits();
-        var yPositions = new float[numberOfLines];
-
-        for (var i = 0; i < numberOfLines; i++)
-        {
-            yPositions[i] = -screenHeight / 2 + screenHeight / (numberOfLines + 1) * (i + 1);
-        }
-
-        return yPositions;
-    }
-
-    public float[] GetYPositionsForLines(int numberOfLines, float backgroundHeight, Vector2 backgroundPosition)
+    private float[] GetYPositionsForLines(int numberOfLines, float backgroundHeight, Vector2 backgroundPosition, float tolerance)
     {
         var yPositions = new float[numberOfLines];
         var bottomEdge = backgroundPosition.y - backgroundHeight / 2;
         var topEdge = backgroundPosition.y + backgroundHeight / 2;
 
-        for (int i = 0; i < numberOfLines; i++)
+        for (var i = 0; i < numberOfLines; i++)
         {
-            yPositions[i] = bottomEdge + backgroundHeight / (numberOfLines + 1) * (i + 1);
+            if (i == numberOfLines - 1)
+            {
+                yPositions[i] = topEdge - tolerance;
+            }
+            else
+            {
+                yPositions[i] = bottomEdge + backgroundHeight / (numberOfLines + 1) * (i + 1);
+            }
         }
 
         return yPositions;
