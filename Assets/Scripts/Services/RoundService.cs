@@ -40,7 +40,7 @@ public class RoundService
     /// <summary>
     /// Property to keep track of the current round.
     /// </summary>
-    public int Round { get; private set; } = 4;
+    public int Round { get; private set; } = 1;
 
     /// <summary>
     /// Property to keep track of the current state.
