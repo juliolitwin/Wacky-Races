@@ -13,6 +13,10 @@ A shader was developed to change the coloring of sprites, aiming to provide the 
 ### Requirements:
 - Unity (2022.3.17), which is the latest LTS version to date.
 
+### Images:
+![image](https://github.com/juliolitwin/Wacky-Races/assets/14114054/e8941d4c-bdae-4e92-b023-2ea78afed43a)
+![image](https://github.com/juliolitwin/Wacky-Races/assets/14114054/cb0b6a25-8421-47ba-a2f2-cf21dd604d76)
+
 ## Test
 
 ### Overview
