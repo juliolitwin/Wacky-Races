@@ -51,8 +51,8 @@ public class Monster : Entity
     /// <param name="bodyHue">The body hue.</param>
     /// <param name="eyeHue">The eye hue.</param>
     /// <param name="bodyShade">The body shade.</param>
-    /// <param name="startPosition">The start position where will to spawn the monster.</param>
-    /// <param name="isRare">Rare monster will to have a cool color effect.</param>
+    /// <param name="startPosition">The start position where to spawn the monster.</param>
+    /// <param name="isRare">Indicates if the monster is rare, which affects its color effect.</param>
     public void Initialization(long id, float movementSpeed, int layer, float bodyHue, float eyeHue, float bodyShade, Vector3 startPosition, bool isRare)
     {
         // Setting basic properties like ID, movement speed, etc.
@@ -63,15 +63,20 @@ public class Monster : Entity
         // Setting the sorting order for rendering and initial position.
         BodyRenderer.sortingOrder = layer;
         transform.position = startPosition;
+        _bodyTransform.localRotation = Quaternion.identity;
+
         ChangeState(EntityState.Idle);
     }
 
     public override void Update()
     {
-        // Process the state from the monster.
+        // Process the state of the monster.
         StateProcess();
     }
 
+    /// <summary>
+    /// Handles the current state of the monster.
+    /// </summary>
     private void StateProcess()
     {
         switch (EntityState)
@@ -79,7 +84,7 @@ public class Monster : Entity
             case EntityState.Idle:
             case EntityState.Out:
                 {
-                    // Nothing to do, because monster is waiting next state.
+                    // No action needed when the monster is idle or out of the screen.
                 }
                 break;
             case EntityState.Run:
@@ -103,7 +108,7 @@ public class Monster : Entity
     }
 
     /// <summary>
-    /// Method to handle the monster's movement.
+    /// Handles the monster's movement.
     /// </summary>
     /// <param name="speed">The movement speed.</param>
     private void MovementProcess(float speed)
@@ -113,22 +118,26 @@ public class Monster : Entity
     }
 
     /// <summary>
-    /// Method to handle the monster's animations.
+    /// Handles the monster's animations.
     /// </summary>
-    /// <param name="speed">The movement speed</param>
+    /// <param name="speed">The movement speed.</param>
     private void AnimationProcess(float speed)
     {
-        // 1. Body rotation animation.
+        // Animate the body rotation.
         _bodyTransform.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(Time.time * speed * MonsterConstants.AnimationSpeed) * MonsterConstants.AnimationAngle);
 
-        // 2. Shadow scale animation.
+        // Animate the shadow scale.
         var shadowScale = (Mathf.Sin(Time.time * speed * MonsterConstants.AnimationShadowSpeed) + 1) / 2 * (MonsterConstants.AnimationShadowMaxScale - MonsterConstants.AnimationShadowMinScale) + MonsterConstants.AnimationShadowMinScale;
         _shadowTransform.localScale = new Vector3(shadowScale, shadowScale, shadowScale);
     }
 
     /// <summary>
-    /// Method to set color swap effects based on monster rarity.
+    /// Sets color swap effects based on the monster's rarity.
     /// </summary>
+    /// <param name="bodyHue">Hue value for the body color.</param>
+    /// <param name="eyeHue">Hue value for the eye color.</param>
+    /// <param name="bodyShade">Shade value for the body color.</param>
+    /// <param name="isRare">Indicates if the monster is rare.</param>
     private void SetColorSwap(float bodyHue, float eyeHue, float bodyShade, bool isRare)
     {
         // Apply special effects for rare monsters.
@@ -150,9 +159,9 @@ public class Monster : Entity
     }
 
     /// <summary>
-    /// Method to check if the monster is out of the screen.
+    /// Checks if the monster is out of the screen.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>True if the monster is out of the screen, otherwise false.</returns>
     private bool IsOutScreen()
     {
         // Determine if the monster's position is beyond the screen's end.
